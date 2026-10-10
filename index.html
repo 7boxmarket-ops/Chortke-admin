@@ -1,786 +1,795 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>CHORTKE | پنل مدیریت</title>
-
-    <meta name="theme-color" content="#09090f">
-    <meta name="description" content="پنل مدیریت اختصاصی CHORTKE">
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <style>
-        :root {
-            --bg: #09090f;
-            --panel: #11111b;
-            --panel2: #171725;
-            --purple: #8957ff;
-            --purple2: #a78bfa;
-            --text: #f4f2ff;
-            --muted: #9693ad;
-            --border: rgba(167,139,250,.15);
-            --green: #38d996;
-            --red: #ff657d;
-            --yellow: #ffc857;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: Tahoma, Arial, sans-serif;
-            min-height: 100vh;
-        }
-
-        button, input, select {
-            font-family: inherit;
-        }
-
-        button {
-            cursor: pointer;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .muted {
-            color: var(--muted);
-        }
-
-        .primary {
-            border: 0;
-            background: linear-gradient(135deg, #8957ff, #6d36e8);
-            color: white;
-            padding: 13px 18px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: bold;
-            transition: .2s;
-        }
-
-        .primary:hover {
-            filter: brightness(1.12);
-        }
-
-        .secondary {
-            border: 1px solid var(--border);
-            background: var(--panel2);
-            color: var(--text);
-            padding: 11px 15px;
-            border-radius: 11px;
-        }
-
-        input, select {
-            width: 100%;
-            background: #0b0b14;
-            border: 1px solid #29263c;
-            border-radius: 11px;
-            padding: 14px;
-            color: white;
-            outline: none;
-            font-size: 14px;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--purple);
-        }
-
-        label {
-            display: block;
-            font-size: 13px;
-            margin-bottom: 9px;
-            color: #c8c3dc;
-        }
-
-        .field {
-            margin-bottom: 18px;
-        }
-
-        /* LOGIN */
-
-        #loginScreen {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 22px;
-        }
-
-        .login-card {
-            width: 100%;
-            max-width: 420px;
-            padding: 32px 25px;
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 23px;
-            box-shadow: 0 20px 70px rgba(0,0,0,.3);
-            animation: appear .5s ease;
-        }
-
-        .brand {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-
-        .logo {
-            width: 68px;
-            height: 68px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            background: linear-gradient(145deg, #a78bfa, #6535db);
-            border-radius: 22px;
-            font-size: 29px;
-            font-weight: bold;
-            box-shadow: 0 0 32px rgba(137,87,255,.22);
-        }
-
-        .brand h1 {
-            margin: 0 0 10px;
-            font-size: 24px;
-            letter-spacing: 2px;
-        }
-
-        .brand p {
-            font-size: 13px;
-            color: var(--muted);
-            line-height: 1.9;
-        }
-
-        .login-card .primary {
-            width: 100%;
-        }
-
-        .message {
-            font-size: 13px;
-            line-height: 1.9;
-            margin-top: 14px;
-            overflow-wrap: anywhere;
-        }
-
-        .message.error {
-            color: var(--red);
-        }
-
-        .message.success {
-            color: var(--green);
-        }
-
-        /* APPLICATION */
-
-        #app {
-            min-height: 100vh;
-        }
-
-        .topbar {
-            height: 76px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            padding: 0 28px;
-            background: rgba(9,9,15,.94);
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(15px);
-        }
-
-        .top-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        .mini-logo {
-            width: 39px;
-            height: 39px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #a78bfa, #6535db);
-            display: grid;
-            place-items: center;
-        }
-
-        .top-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .layout {
-            display: grid;
-            grid-template-columns: 235px minmax(0,1fr);
-            min-height: calc(100vh - 76px);
-        }
-
-        .sidebar {
-            padding: 25px 15px;
-            border-left: 1px solid var(--border);
-            background: #0c0c14;
-        }
-
-        .side-title {
-            font-size: 11px;
-            color: var(--muted);
-            padding: 0 12px;
-            margin-bottom: 15px;
-        }
-
-        .nav-btn {
-            width: 100%;
-            border: 1px solid transparent;
-            background: transparent;
-            color: #b8b4ca;
-            text-align: right;
-            padding: 14px 13px;
-            border-radius: 12px;
-            margin-bottom: 7px;
-            font-size: 13px;
-            transition: .2s;
-        }
-
-        .nav-btn:hover, .nav-btn.active {
-            background: rgba(137,87,255,.12);
-            border-color: rgba(137,87,255,.2);
-            color: white;
-        }
-
-        .nav-icon {
-            display: inline-block;
-            width: 29px;
-        }
-
-        main {
-            min-width: 0;
-            padding: 30px;
-        }
-
-        .page-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .page-head h2 {
-            margin: 0 0 10px;
-            font-size: 23px;
-        }
-
-        .page-head p {
-            margin: 0;
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.9;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0,1fr));
-            gap: 16px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 17px;
-            padding: 20px;
-            min-width: 0;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 17px;
-        }
-
-        .stat-value {
-            font-size: 27px;
-            font-weight: bold;
-            overflow-wrap: anywhere;
-        }
-
-        .stat-note {
-            margin-top: 12px;
-            color: var(--muted);
-            font-size: 11px;
-            line-height: 1.8;
-        }
-
-        .section {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 17px;
-            margin-bottom: 22px;
-            overflow: hidden;
-        }
-
-        .section-head {
-            padding: 19px 21px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .section-head h3 {
-            font-size: 15px;
-            margin: 0;
-        }
-
-        .section-body {
-            padding: 22px;
-        }
-
-        .table-wrap {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            min-width: 620px;
-            font-size: 12px;
-        }
-
-        th, td {
-            text-align: right;
-            padding: 15px 17px;
-            border-bottom: 1px solid rgba(167,139,250,.09);
-            white-space: nowrap;
-        }
-
-        th {
-            color: var(--muted);
-            font-weight: normal;
-            background: rgba(255,255,255,.015);
-        }
-
-        tr:last-child td {
-            border-bottom: 0;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 6px 9px;
-            border-radius: 8px;
-            font-size: 11px;
-        }
-
-        .badge.green {
-            color: var(--green);
-            background: rgba(56,217,150,.1);
-        }
-
-        .badge.red {
-            color: var(--red);
-            background: rgba(255,101,125,.1);
-        }
-
-        .badge.yellow {
-            color: var(--yellow);
-            background: rgba(255,200,87,.1);
-        }
-
-        .badge.purple {
-            color: var(--purple2);
-            background: rgba(137,87,255,.12);
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0,1fr));
-            gap: 18px;
-        }
-
-        .info-box {
-            padding: 15px;
-            border-radius: 12px;
-            background: var(--panel2);
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 2;
-            margin-bottom: 20px;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 35px 15px;
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 2;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 17px;
-            height: 17px;
-            border: 2px solid rgba(255,255,255,.25);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin .7s linear infinite;
-            vertical-align: middle;
-            margin-left: 8px;
-        }
-
-        .footer {
-            text-align: center;
-            color: #77738e;
-            font-size: 11px;
-            padding: 25px 10px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes appear {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media(max-width: 1100px) {
-            .cards {
-                grid-template-columns: repeat(2, minmax(0,1fr));
-            }
-
-            .layout {
-                grid-template-columns: 200px minmax(0,1fr);
-            }
-
-            main {
-                padding: 22px;
-            }
-        }
-
-        @media(max-width: 720px) {
-            .topbar {
-                padding: 0 14px;
-                height: 66px;
-            }
-
-            .top-brand {
-                font-size: 12px;
-            }
-
-            .top-actions .secondary {
-                padding: 10px;
-                font-size: 11px;
-            }
-
-            .layout {
-                display: block;
-            }
-
-            .sidebar {
-                display: flex;
-                gap: 7px;
-                padding: 12px;
-                overflow-x: auto;
-                border-left: 0;
-                border-bottom: 1px solid var(--border);
-            }
-
-            .side-title {
-                display: none;
-            }
-
-            .nav-btn {
-                width: auto;
-                flex: 0 0 auto;
-                margin: 0;
-                padding: 12px;
-                font-size: 11px;
-            }
-
-            .nav-icon {
-                width: auto;
-                margin-left: 5px;
-            }
-
-            main {
-                padding: 18px 13px;
-            }
-
-            .page-head h2 {
-                font-size: 19px;
-            }
-
-            .cards {
-                gap: 10px;
-            }
-
-            .stat-card {
-                padding: 15px;
-            }
-
-            .stat-value {
-                font-size: 23px;
-            }
-
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-
-            .section-body {
-                padding: 16px;
-            }
-
-            .page-head {
-                align-items: flex-start;
-            }
-        }
-
-        @media(max-width: 370px) {
-            .cards {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#09090d">
+<title>پنل مدیریت چرتکه</title>
+
+<style>
+:root {
+  --bg: #09090d;
+  --panel: #15141d;
+  --border: #302b40;
+  --purple: #8b5cf6;
+  --text: #f5f3ff;
+  --muted: #aaa4bc;
+  --green: #34d399;
+  --red: #fb7185;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at top, #26163b 0, transparent 48%),
+    var(--bg);
+  color: var(--text);
+  font-family: Tahoma, Arial, sans-serif;
+  min-height: 100vh;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.logo span {
+  color: #b69aff;
+}
+
+.card {
+  background: rgba(21, 20, 29, .96);
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: 22px;
+}
+
+h2 {
+  font-size: 18px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 14px 0 7px;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  background: #0b0a10;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: white;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--purple);
+}
+
+button {
+  background: var(--purple);
+  color: white;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .6;
+}
+
+.secondary {
+  background: #302a40;
+}
+
+.danger {
+  background: #9f2948;
+}
+
+.actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.status {
+  font-size: 13px;
+  line-height: 2;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.notice {
+  background: #211b2e;
+  border: 1px solid #39304d;
+  padding: 13px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 2;
+  color: #ddd3ff;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  background: #0b0a10;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.toolbar input {
+  flex: 1;
+  min-width: 0;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 570px;
+}
+
+th, td {
+  text-align: right;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+th {
+  color: #c4b5fd;
+}
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 20px;
+}
+
+@media (max-width: 650px) {
+  main {
+    padding: 12px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .toolbar button {
+    width: 100%;
+  }
+}
+</style>
 </head>
 
 <body>
+<main>
 
-<!-- LOGIN SCREEN -->
+<header>
+  <div>
+    <div class="logo">CHORTKE <span>ADMIN</span></div>
+    <div class="muted">پنل مدیریت چرتکه</div>
+  </div>
+  <div id="managerInfo" class="muted"></div>
+</header>
 
-<section id="loginScreen">
-    <div class="login-card">
+<!-- LOGIN -->
+<section id="loginSection" class="card">
+  <h1>ورود مدیر</h1>
+  <p class="muted">برای ورود، از حساب مدیر مجاز استفاده کنید.</p>
 
-        <div class="brand">
-            <div class="logo">چ</div>
-            <h1>CHORTKE</h1>
-            <p>پنل مدیریت اختصاصی<br>مدیریت هوشمند کاربران و اشتراک‌ها</p>
-        </div>
+  <form id="loginForm">
+    <label for="email">ایمیل مدیر</label>
+    <input
+      id="email"
+      type="email"
+      autocomplete="username"
+      required
+      placeholder="ایمیل حساب مدیر"
+    >
 
-        <form id="loginForm">
+    <label for="password">رمز عبور</label>
+    <input
+      id="password"
+      type="password"
+      autocomplete="current-password"
+      required
+      placeholder="رمز عبور"
+    >
 
-            <div class="field">
-                <label for="email">ایمیل مدیر</label>
-                <input
-                    id="email"
-                    type="email"
-                    autocomplete="username"
-                    placeholder="ایمیل حساب مدیر"
-                    required
-                >
-            </div>
-
-            <div class="field">
-                <label for="password">رمز عبور</label>
-                <input
-                    id="password"
-                    type="password"
-                    autocomplete="current-password"
-                    placeholder="رمز عبور"
-                    required
-                >
-            </div>
-
-            <button class="primary" id="loginButton" type="submit">
-                ورود به پنل مدیریت
-            </button>
-
-            <div id="loginMessage" class="message" role="status"></div>
-
-        </form>
-
-        <p class="muted" style="font-size:11px;text-align:center;line-height:2;margin-top:24px">
-            دسترسی فقط برای مدیران مجاز
-        </p>
-
+    <div class="actions">
+      <button id="loginButton" type="submit">ورود به پنل</button>
     </div>
+  </form>
+
+  <div id="loginStatus" class="status" role="status"></div>
 </section>
 
+<!-- ADMIN PANEL -->
+<section id="adminSection" class="hidden">
 
-<!-- MAIN APPLICATION -->
+  <div class="card">
+    <div class="actions" style="margin-top:0">
+      <button class="secondary" data-page="dashboard">داشبورد</button>
+      <button class="secondary" data-page="users">کاربران</button>
+      <button class="secondary" data-page="subscriptions">اشتراک‌ها</button>
+      <button class="secondary" data-page="settings">تنظیمات</button>
+      <button id="logoutButton" class="danger">خروج مدیر</button>
+    </div>
+  </div>
 
-<div id="app" class="hidden">
+  <!-- DASHBOARD -->
+  <section id="page-dashboard" class="page">
+    <div class="card">
+      <h1>داشبورد مدیریت</h1>
 
-    <header class="topbar">
-
-        <div class="top-brand">
-            <div class="mini-logo">چ</div>
-            <span>CHORTKE <span style="color:var(--purple2)">ADMIN</span></span>
+      <div class="stats">
+        <div class="stat">
+          <strong id="userCount">—</strong>
+          <span class="muted">تعداد کاربران دریافت‌شده</span>
         </div>
 
-        <div class="top-actions">
-            <span id="managerEmail" class="muted" style="font-size:11px"></span>
-            <button id="refreshButton" class="secondary">↻ بروزرسانی</button>
-            <button id="logoutButton" class="secondary">خروج</button>
+        <div class="stat">
+          <strong id="lastUpdate">—</strong>
+          <span class="muted">آخرین بروزرسانی</span>
         </div>
 
-    </header>
+        <div class="stat">
+          <strong id="connectionState">—</strong>
+          <span class="muted">وضعیت اتصال</span>
+        </div>
+      </div>
 
+      <div id="dashboardStatus" class="status"></div>
+    </div>
+  </section>
 
-    <div class="layout">
+  <!-- USERS -->
+  <section id="page-users" class="page hidden">
+    <div class="card">
+      <h1>مدیریت کاربران</h1>
 
-        <aside class="sidebar">
+      <div class="toolbar">
+        <input
+          id="userSearch"
+          type="search"
+          placeholder="جست‌وجو با نام کاربری یا موبایل"
+        >
+        <button id="refreshUsers">بروزرسانی</button>
+      </div>
 
-            <div class="side-title">مدیریت سیستم</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>نام کاربری</th>
+              <th>موبایل</th>
+              <th>شناسه</th>
+              <th>تاریخ ثبت‌نام</th>
+            </tr>
+          </thead>
 
-            <button class="nav-btn active" data-page="dashboard">
-                <span class="nav-icon">▦</span> داشبورد
-            </button>
+          <tbody id="usersTable">
+            <tr>
+              <td colspan="4">هنوز اطلاعاتی بارگذاری نشده است.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-            <button class="nav-btn" data-page="users">
-                <span class="nav-icon">♙</span> کاربران
-            </button>
+      <div id="usersStatus" class="status"></div>
+    </div>
+  </section>
 
-            <button class="nav-btn" data-page="subscriptions">
-                <span class="nav-icon">◷</span> اشتراک‌ها
-            </button>
+  <!-- SUBSCRIPTIONS -->
+  <section id="page-subscriptions" class="page hidden">
+    <div class="card">
+      <h1>مدیریت اشتراک‌ها</h1>
 
-            <button class="nav-btn" data-page="settings">
-                <span class="nav-icon">⚙</span> تنظیمات
-            </button>
+      <div class="notice">
+        این قسمت فعلاً نمایشی است. تغییر مدت آزمایشی یا تمدید اشتراک تا زمان
+        پیاده‌سازی توابع امن سمت سرور، ذخیره یا روی حساب کاربران اعمال نمی‌شود.
+      </div>
 
-        </aside>
+      <label for="trialDays">مدت اشتراک آزمایشی (روز)</label>
+      <input id="trialDays" type="number" min="0" value="7" disabled>
 
+      <label for="renewDays">مدت تمدید اشتراک (روز)</label>
+      <input id="renewDays" type="number" min="1" value="30" disabled>
 
-        <main>
+      <p class="muted">
+        برای فعال‌سازی این امکانات، ساختار واقعی اشتراک‌ها و مجوزهای دیتابیس
+        باید مشخص و در سمت سرور بررسی شود.
+      </p>
+    </div>
+  </section>
 
-            <!-- DASHBOARD -->
+  <!-- SETTINGS -->
+  <section id="page-settings" class="page hidden">
+    <div class="card">
+      <h1>تنظیمات اتصال</h1>
 
-            <section id="page-dashboard" class="page">
+      <p class="muted">
+        این پنل از کلید عمومی Supabase استفاده می‌کند.
+        کلیدهای مخفی یا service_role نباید داخل این فایل قرار بگیرند.
+      </p>
 
-                <div class="page-head">
-                    <div>
-                        <h2>داشبورد مدیریت</h2>
-                        <p>نمای کلی وضعیت پنل مدیریت CHORTKE</p>
-                    </div>
-                    <span class="badge purple">مدیریت</span>
-                </div>
+      <div class="actions">
+        <button id="checkConnection">بررسی اتصال</button>
+      </div>
 
-                <div class="cards">
+      <div id="settingsStatus" class="status"></div>
+    </div>
+  </section>
 
-                    <div class="stat-card">
-                        <div class="stat-label">کل کاربران ثبت‌شده در پروفایل‌ها</div>
-                        <div class="stat-value" id="totalUsers">—</div>
-                        <div class="stat-note">بر اساس اطلاعات قابل مشاهده در جدول profiles</div>
-                    </div>
+</section>
 
-                    <div class="stat-card">
-                        <div class="stat-label">اشتراک‌های فعال</div>
-                        <div class="stat-value" id="activeSubs">—</div>
-                        <div class="stat-note">پس از اتصال بخش اشتراک</div>
-                    </div>
+<footer>CHORTKE · پنل مدیریت</footer>
+</main>
 
-                    <div class="stat-card">
-                        <div class="stat-label">اشتراک‌های منقضی‌شده</div>
-                        <div class="stat-value" id="expiredSubs">—</div>
-                        <div class="stat-note">پس از اتصال بخش اشتراک</div>
-                    </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-                    <div class="stat-card">
-                        <div class="stat-label">وضعیت ارتباط</div>
-                        <div class="stat-value" id="connectionStatus" style="font-size:20px">
-                            بررسی...
-                        </div>
-                        <div class="stat-note" id="connectionNote">
-                            در حال بررسی اتصال به سرور
-                        </div>
-                    </div>
+<script>
+(() => {
+  "use strict";
 
-                </div>
+  // تنظیمات پروژه Supabase
+  const SUPABASE_URL =
+    "https://jufpfvsyextyfyiupxuu.supabase.co";
 
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_JhNw6OzK73R7TZIS9Kggvw_A-UNUHDs";
 
-                <div class="section">
+  // ایمیل مجاز مدیر
+  const ADMIN_EMAILS = [
+    "7box.market@gmail.com"
+  ].map(email => email.toLowerCase());
 
-                    <div class="section-head">
-                        <h3>آخرین کاربران ثبت‌شده</h3>
-                        <button class="secondary" data-goto="users">مشاهده همه</button>
-                    </div>
+  const $ = id => document.getElementById(id);
 
-                    <div id="recentUsers" class="empty">
-                        برای دریافت اطلاعات، منتظر اتصال به سرور باشید.
-                    </div>
+  let db = null;
+  let users = [];
 
-                </div>
+  const loginSection = $("loginSection");
+  const adminSection = $("adminSection");
 
+  function setStatus(id, message, isError = false) {
+    const element = $(id);
+    if (!element) return;
 
-                <div class="section">
+    element.textContent = message;
+    element.style.color = isError
+      ? "var(--red)"
+      : "var(--green)";
+  }
 
-                    <div class="section-head">
-                        <h3>وضعیت سیستم</h3>
-                    </div>
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]);
+  }
 
-                    <div class="section-body">
+  function showLogin(message = "") {
+    loginSection.classList.remove("hidden");
+    adminSection.classList.add("hidden");
+    $("managerInfo").textContent = "";
 
-                        <div class="info-box">
-                            این پنل برای اتصال به پروژهٔ Supabase برنامهٔ CHORTKE
-                            طراحی شده است. اطلاعات حساس حساب‌ها نباید از طریق کلید عمومی
-                            یا درخواست‌های مستقیم مرورگر در دسترس قرار بگیرند.
-                        </div>
+    if (message) {
+      setStatus("loginStatus", message, true);
+    }
+  }
 
-                        <div id="systemMessage" class="muted" style="font-size:12px;line-height:2">
-                            آمادهٔ بررسی وضعیت سیستم
-                        </div>
+  function showAdmin(email) {
+    loginSection.classList.add("hidden");
+    adminSection.classList.remove("hidden");
+    $("managerInfo").textContent = "مدیر: " + email;
+    showPage("dashboard");
+  }
 
-                    </div>
+  function showPage(pageName) {
+    document.querySelectorAll(".page").forEach(page => {
+      page.classList.add("hidden");
+    });
 
-                </div>
+    const page = $("page-" + pageName);
 
-            </section>
+    if (page) {
+      page.classList.remove("hidden");
+    }
 
+    if (pageName === "users") {
+      loadUsers();
+    }
+  }
 
-            <!-- USERS -->
+  async function getAuthorizedUser() {
+    if (!db) {
+      throw new Error("اتصال به سرویس برقرار نیست.");
+    }
 
-            <section id="page-users" class="page hidden">
+    const { data, error } = await db.auth.getUser();
 
-                <div class="page-head">
-                    <div>
-                        <h2>مدیریت کاربران</h2>
-                        <p>مشاهدهٔ اطلاعات پروفایل کاربران برنامه</p>
-                    </div>
-                    <button class="primary" id="loadUsersButton">بارگذاری کاربران</button>
-                </div>
+    if (error) {
+      throw error;
+    }
 
-                <div class="section">
+    const user = data.user;
 
-                    <div class="section-head">
-                        <h3>فهرست کاربران</h3>
-                        <span id="userCount" class="badge purple">۰ کاربر</span>
-                    </div>
+    if (
+      !user ||
+      !ADMIN_EMAILS.includes(
+        (user.email || "").toLowerCase()
+      )
+    ) {
+      throw new Error("دسترسی مدیر تأیید نشد.");
+    }
 
-                    <div class="section-body">
+    return user;
+  }
 
-                        <div class="field">
-                            <label for="userSearch">جستجو در نام کاربری یا شماره موبایل</label>
-                            <input id="userSearch" type="search" placeholder="عبارت مورد نظر را وارد کنید">
-                        </div>
+  // ورود مدیر
+  $("loginForm").addEventListener("submit", async event => {
+    event.preventDefault();
 
-                    </div>
+    if (!db) {
+      setStatus(
+        "loginStatus",
+        "سرویس اتصال بارگذاری نشده است. اینترنت را بررسی کنید.",
+        true
+      );
+      return;
+    }
 
-                    <div id="usersTable" class="empty">
-                        هنوز اطلاعاتی بارگذاری نشده است.
-                    </div>
+    const button = $("loginButton");
 
-                </div>
+    button.disabled = true;
+    button.textContent = "در حال ورود…";
 
-                <div class="info-box">
-                    این فهرست از جدول profiles خوانده می‌شود.
-                    ایمیل و وضعیت تأیید حساب، اطلاعات جداگانه‌ای هستند و
-                    در صورت نیاز باید از طریق یک تابع امن سمت سرور دریافت شوند.
-                </div>
+    setStatus("loginStatus", "در حال بررسی اطلاعات…");
 
-            </section>
+    try {
+      const { data, error } = await db.auth.signInWithPassword({
+        email: $("email").value.trim(),
+        password: $("password").value
+      });
 
+      if (error) {
+        throw error;
+      }
 
-            <!-- SUBSCRIPTIONS -->
+      const email = (data.user?.email || "").toLowerCase();
 
-            <section id="page-subscriptions" class="page hi
+      if (!ADMIN_EMAILS.includes(email)) {
+        await db.auth.signOut();
+
+        throw new Error(
+          "این حساب در فهرست مدیران مجاز نیست."
+        );
+      }
+
+      $("password").value = "";
+      setStatus("loginStatus", "");
+      showAdmin(data.user.email);
+
+    } catch (error) {
+      setStatus(
+        "loginStatus",
+        error.message || "ورود ناموفق بود.",
+        true
+      );
+    } finally {
+      button.disabled = false;
+      button.textContent = "ورود به پنل";
+    }
+  });
+
+  // خروج مدیر
+  $("logoutButton").addEventListener("click", async () => {
+    if (db) {
+      await db.auth.signOut();
+    }
+
+    showLogin("از حساب مدیر خارج شدید.");
+  });
+
+  // جابه‌جایی صفحات
+  document.querySelectorAll("[data-page]").forEach(button => {
+    button.addEventListener("click", () => {
+      showPage(button.dataset.page);
+    });
+  });
+
+  // دریافت فهرست کاربران
+  async function loadUsers() {
+    if (!db) return;
+
+    $("usersTable").innerHTML =
+      '<tr><td colspan="4">در حال بارگذاری…</td></tr>';
+
+    setStatus("usersStatus", "در حال دریافت کاربران…");
+
+    try {
+      await getAuthorizedUser();
+
+      /*
+       * این کوئری فرض می‌کند جدول profiles دارای ستون‌های
+       * id, username, mobile, created_at باشد.
+       * در صورت تفاوت ساختار دیتابیس، کوئری باید اصلاح شود.
+       */
+      const { data, error } = await db
+        .from("profiles")
+        .select("id, username, mobile, created_at")
+        .order("created_at", { ascending: false })
+        .limit(500);
+
+      if (error) {
+        throw error;
+      }
+
+      users = data || [];
+
+      renderUsers();
+
+      $("userCount").textContent = users.length;
+      $("lastUpdate").textContent =
+        new Date().toLocaleTimeString("fa-IR");
+
+      $("connectionState").textContent = "متصل";
+
+      setStatus(
+        "usersStatus",
+        users.length
+          ? "فهرست کاربران بارگذاری شد."
+          : "کاربری برای نمایش دریافت نشد."
+      );
+
+      setStatus(
+        "dashboardStatus",
+        "درخواست اطلاعات کاربران انجام شد."
+      );
+
+    } catch (error) {
+      $("usersTable").innerHTML =
+        '<tr><td colspan="4">دریافت اطلاعات ناموفق بود.</td></tr>';
+
+      setStatus(
+        "usersStatus",
+        "خطا: " + (error.message || "خطای ناشناخته"),
+        true
+      );
+
+      $("connectionState").textContent = "نیازمند بررسی";
+
+      setStatus(
+        "dashboardStatus",
+        "ساختار جدول profiles یا مجوزهای دسترسی دیتابیس را بررسی کنید.",
+        true
+      );
+    }
+  }
+
+  function renderUsers() {
+    const query = $("userSearch").value
+      .trim()
+      .toLowerCase();
+
+    const filtered = users.filter(user => {
+      const values = [
+        user.username,
+        user.mobile,
+        user.id
+      ];
+
+      return values.some(value =>
+        String(value ?? "").toLowerCase().includes(query)
+      );
+    });
+
+    if (!filtered.length) {
+      $("usersTable").innerHTML =
+        '<tr><td colspan="4">موردی پیدا نشد.</td></tr>';
+      return;
+    }
+
+    $("usersTable").innerHTML = filtered.map(user => `
+      <tr>
+        <td>${escapeHTML(user.username || "—")}</td>
+        <td>${escapeHTML(user.mobile || "—")}</td>
+        <td>${escapeHTML(String(user.id || "").slice(0, 12))}</td>
+        <td>${
+          escapeHTML(
+            user.created_at
+              ? new Date(user.created_at).toLocaleDateString("fa-IR")
+              : "—"
+          )
+        }</td>
+      </tr>
+    `).join("");
+  }
+
+  $("userSearch").addEventListener("input", renderUsers);
+  $("refreshUsers").addEventListener("click", loadUsers);
+
+  // بررسی اتصال
+  $("checkConnection").addEventListener("click", async () => {
+    setStatus("settingsStatus", "در حال بررسی اتصال…");
+
+    try {
+      const { data, error } = await db.auth.getSession();
+
+      if (error) {
+        throw error;
+      }
+
+      setStatus(
+        "settingsStatus",
+        data.session
+          ? "اتصال برقرار است و نشست ورود وجود دارد."
+          : "اتصال برقرار است؛ هنوز وارد حساب نشده‌اید."
+      );
+
+    } catch (error) {
+      setStatus(
+        "settingsStatus",
+        "بررسی اتصال ناموفق بود: " + error.message,
+        true
+      );
+    }
+  });
+
+  // راه‌اندازی Supabase
+  try {
+    if (!window.supabase?.createClient) {
+      showLogin(
+        "کتابخانه Supabase بارگذاری نشد. اتصال اینترنت را بررسی کنید."
+      );
+      return;
+    }
+
+    db = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      }
+    );
+
+    db.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        if (!adminSection.classList.contains("hidden")) {
+          showLogin();
+        }
+        return;
+      }
+
+      const email = (session.user?.email || "").toLowerCase();
+
+      if (!ADMIN_EMAILS.includes(email)) {
+        db.auth.signOut();
+        showLogin("این حساب اجازه ورود به پنل را ندارد.");
+      }
+    });
+
+    (async () => {
+      try {
+        const { data, error } = await db.auth.getSession();
+
+        if (error) {
+          throw error;
+        }
+
+        const session = data.session;
+
+        if (!session) {
+          showLogin();
+          return;
+        }
+
+        const email = (session.user.email || "").toLowerCase();
+
+        if (!ADMIN_EMAILS.includes(email)) {
+          await db.auth.signOut();
+          showLogin("این حساب اجازه ورود به پنل را ندارد.");
+          return;
+        }
+
+        showAdmin(session.user.email);
+
+      } catch (error) {
+        showLogin(
+          "بررسی نشست ناموفق بود: " + error.message
+        );
+      }
+    })();
+
+  } catch (error) {
+    showLogin(
+      "راه‌اندازی پنل ناموفق بود: " + error.message
+    );
+  }
+
+})();
+</script>
+</body>
+</html>

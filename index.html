@@ -595,7 +595,7 @@ footer {
        */
       const { data, error } = await db
         .from("profiles")
-        .select("id, username, mobile, created_at")
+        .select("id, email, mobile, created_at")
         .order("created_at", { ascending: false })
         .limit(500);
 
